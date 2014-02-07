@@ -18,14 +18,14 @@ int main()
 	request += "Host: www.eyewire.org\r\n";
 	request += "\r\n";
 
-	sock = sockmgr->OpenSocket("18.4.45.12", 80); // Open the socket
+	sock = sockmgr->CreateSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP); // Open the socket
 	// Get the (quite lengthy) response
-	std::string response = sockmgr->SendData(sock, request);
+	std::string response = sockmgr->SendData(sock, "18.4.45.12", 80, request);
 	std::cout << response << std::endl;
 
 	std::cin.get();
 
-	sockmgr->CloseSocket(sock); // Close our socket
+	sockmgr->DeleteSocket(sock); // Close our socket
 	delete sockmgr; // Clean up
 	return 0;
 }
