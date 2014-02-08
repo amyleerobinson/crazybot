@@ -85,12 +85,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="crazybot\CSocket.cpp" />
-    <ClCompile Include="CWebSocket.cpp" />
+    <ClCompile Include="crazybot\CWebSocket.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="crazybot\CSocket.h" />
-    <ClInclude Include="CWebSocket.h" />
+    <ClInclude Include="crazybot\CWebSocket.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

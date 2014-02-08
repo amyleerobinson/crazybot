@@ -20,7 +20,7 @@
     <ClCompile Include="crazybot\CSocket.cpp">
       <Filter>Source Files\crazybot</Filter>
     </ClCompile>
-    <ClCompile Include="CWebSocket.cpp">
+    <ClCompile Include="crazybot\CWebSocket.cpp">
       <Filter>Source Files\crazybot</Filter>
     </ClCompile>
   </ItemGroup>
@@ -28,7 +28,7 @@
     <ClInclude Include="crazybot\CSocket.h">
       <Filter>Source Files\crazybot</Filter>
     </ClInclude>
-    <ClInclude Include="CWebSocket.h">
+    <ClInclude Include="crazybot\CWebSocket.h">
       <Filter>Source Files\crazybot</Filter>
     </ClInclude>
   </ItemGroup>
