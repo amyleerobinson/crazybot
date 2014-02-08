@@ -20,9 +20,15 @@
     <ClCompile Include="crazybot\CSocket.cpp">
       <Filter>Source Files\crazybot</Filter>
     </ClCompile>
+    <ClCompile Include="CWebSocket.cpp">
+      <Filter>Source Files\crazybot</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="crazybot\CSocket.h">
+      <Filter>Source Files\crazybot</Filter>
+    </ClInclude>
+    <ClInclude Include="CWebSocket.h">
       <Filter>Source Files\crazybot</Filter>
     </ClInclude>
   </ItemGroup>
