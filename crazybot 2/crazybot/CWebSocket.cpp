@@ -18,7 +18,7 @@ CWebSocket::~CWebSocket()
 
 void CWebSocket::on_open( connection_hdl hdl)
 {
-	//con_ptr = cl->get_con_from_hdl(hdl);
+	con_ptr = wsock->get_con_from_hdl(hdl);
 }
 
 void CWebSocket::on_message(websocketpp::connection_hdl hdl, message_ptr msg)
@@ -73,10 +73,37 @@ bool CWebSocket::CloseSocket()
 {
 	if (is_open)
 	{
-		stay_open = true;
+		stay_open = false;
 		return true;
 	}
 	return false;
+}
+
+bool CWebSocket::SendMsg(std::string message)
+{
+	if (!is_open)
+		return false;
+
+	websocketpp::lib::error_code ec;
+
+	wsock->send(con_ptr, message, websocketpp::frame::opcode::text, ec);
+}
+
+std::string CWebSocket::GetNextMessage()
+{
+	mtx->lock(); // We want to be sure nothing else is using the queue
+
+	if (msg_queue.empty())
+	{
+		mtx->unlock();
+		return "";
+	}
+	
+	std::string msg = msg_queue.front(); // Fetch the message on the front of the queue
+	msg_queue.pop();
+	mtx->unlock();
+
+	return msg;
 }
 
 std::mutex *CWebSocket::GetMutex()

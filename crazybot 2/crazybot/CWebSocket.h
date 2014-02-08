@@ -43,6 +43,7 @@ public:
 	bool OpenSocket(std::string address);
 	bool CloseSocket();
 	bool SendMsg(std::string message);
+	std::string GetNextMessage();
 	std::mutex *GetMutex();
 };
 
