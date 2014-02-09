@@ -20,22 +20,22 @@
     <ClCompile Include="crazybot\CSocket.cpp">
       <Filter>Source Files\crazybot</Filter>
     </ClCompile>
-    <ClCompile Include="crazybot\CWebSocket.cpp">
-      <Filter>Source Files\crazybot</Filter>
-    </ClCompile>
     <ClCompile Include="crazybot\CJSON.cpp">
       <Filter>Source Files\crazybot</Filter>
+    </ClCompile>
+    <ClCompile Include="CFramework.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="crazybot\CSocket.h">
       <Filter>Source Files\crazybot</Filter>
     </ClInclude>
-    <ClInclude Include="crazybot\CWebSocket.h">
-      <Filter>Source Files\crazybot</Filter>
-    </ClInclude>
     <ClInclude Include="crazybot\CJSON.h">
       <Filter>Source Files\crazybot</Filter>
+    </ClInclude>
+    <ClInclude Include="CFramework.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

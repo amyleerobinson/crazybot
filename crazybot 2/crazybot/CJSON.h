@@ -5,9 +5,6 @@
 
 class CJSON // This class will be doing all our JSON work
 {
-	Json::Value root;
-	Json::Reader reader;
-	Json::StyledWriter writer;
 public:
 	CJSON();
 	~CJSON();

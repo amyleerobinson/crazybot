@@ -149,3 +149,6 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+
+# Additional folders which shouldn't be uploaded
+crazybot 2/config

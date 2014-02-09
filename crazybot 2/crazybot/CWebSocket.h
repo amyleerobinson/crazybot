@@ -31,12 +31,16 @@ class CWebSocket // Our websocket client
 	bool stay_open;
 	std::mutex *mtx;
 
+	std::thread *run_thread;
+
 	// The message handler!
 	void on_message(websocketpp::connection_hdl hdl, message_ptr msg);
 	// The handler for websocket opening
 	void on_open(connection_hdl hdl);
 	// The function for the connection thread
-	void con_loop(std::string message);
+	//void con_loop(std::string message);
+
+	friend class CFramework;
 public:
 	CWebSocket();
 	~CWebSocket();

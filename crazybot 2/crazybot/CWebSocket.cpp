@@ -6,6 +6,7 @@ CWebSocket::CWebSocket()
 	stay_open = true;
 	wsock = new client<config::asio_client>;
 	mtx = new std::mutex;
+	run_thread = NULL;
 }
 
 CWebSocket::~CWebSocket()
@@ -14,6 +15,8 @@ CWebSocket::~CWebSocket()
 		delete wsock;
 	if (mtx)
 		delete mtx;
+	if (run_thread)
+		run_thread->join();
 }
 
 void CWebSocket::on_open( connection_hdl hdl)
@@ -28,12 +31,17 @@ void CWebSocket::on_message(websocketpp::connection_hdl hdl, message_ptr msg)
 	mtx->lock(); // We don't want to cause a data race in our message queue
 	msg_queue.push(message);
 	mtx->unlock();
+
+	if (!stay_open)
+		wsock->stop();
 }
 
-void CWebSocket::con_loop(std::string address)
+/*void CWebSocket::con_loop(std::string address)
 {
 	websocketpp::lib::error_code ec;
 	websocketpp::client<config::asio_client>::connection_ptr con = wsock->get_connection(address, ec);
+
+	std::this_thread::sleep_for(std::chrono::seconds(10));
 
 	while (stay_open) // Connection loop
 	{
@@ -41,7 +49,7 @@ void CWebSocket::con_loop(std::string address)
 		wsock->run();
 		wsock->reset();
 	}
-}
+}*/
 
 bool CWebSocket::OpenSocket(std::string address)
 {
@@ -62,9 +70,15 @@ bool CWebSocket::OpenSocket(std::string address)
 
 	stay_open = true;
 
-	std::thread run_thread(&CWebSocket::con_loop, this, address);
+	// Run the WebSocket connection
+	websocketpp::lib::error_code ec;
+	websocketpp::client<config::asio_client>::connection_ptr con = wsock->get_connection(address, ec);
 
 	is_open = true;
+	wsock->connect(con);
+	wsock->run();
+	wsock->reset();
+	is_open = false;
 
 	return true;
 }
