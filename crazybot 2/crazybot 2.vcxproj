@@ -88,12 +88,18 @@
     <ClCompile Include="CFramework.cpp" />
     <ClCompile Include="crazybot\CJSON.cpp" />
     <ClCompile Include="crazybot\CSocket.cpp" />
+    <ClCompile Include="crazybot\CStats.cpp" />
+    <ClCompile Include="crazybot\CWebSocket.cpp" />
+    <ClCompile Include="crazybot\Utils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CFramework.h" />
     <ClInclude Include="crazybot\CJSON.h" />
     <ClInclude Include="crazybot\CSocket.h" />
+    <ClInclude Include="crazybot\CStats.h" />
+    <ClInclude Include="crazybot\CWebSocket.h" />
+    <ClInclude Include="crazybot\Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

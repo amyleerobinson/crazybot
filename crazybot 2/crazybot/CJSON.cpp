@@ -25,7 +25,7 @@ std::string CJSON::Stringify(Json::Value data)
 	Json::StyledWriter writer;
 	std::string val;
 
-	writer.write(data);
+	val = writer.write(data);
 
 	return val;
 }

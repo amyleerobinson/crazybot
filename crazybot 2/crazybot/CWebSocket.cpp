@@ -7,16 +7,16 @@ CWebSocket::CWebSocket()
 	wsock = new client<config::asio_client>;
 	mtx = new std::mutex;
 	run_thread = NULL;
+	is_init = false;
 }
 
 CWebSocket::~CWebSocket()
 {
-	if (wsock)
-		delete wsock;
-	if (mtx)
-		delete mtx;
+	SAFE_DELETE(wsock);
+	SAFE_DELETE(mtx);
 	if (run_thread)
 		run_thread->join();
+	SAFE_DELETE(run_thread);
 }
 
 void CWebSocket::on_open( connection_hdl hdl)
@@ -51,12 +51,8 @@ void CWebSocket::on_message(websocketpp::connection_hdl hdl, message_ptr msg)
 	}
 }*/
 
-bool CWebSocket::OpenSocket(std::string address)
+void CWebSocket::Init()
 {
-	if (is_open)
-		return false;
-
-
 	// Clear channels
 	wsock->clear_access_channels(websocketpp::log::alevel::all);
 	wsock->clear_error_channels(websocketpp::log::elevel::all);
@@ -65,8 +61,16 @@ bool CWebSocket::OpenSocket(std::string address)
 	wsock->init_asio();
 
 	// Set handlers
-	wsock->set_message_handler(websocketpp::lib::bind(&CWebSocket::on_message,this,::_1,::_2));
-	wsock->set_open_handler(websocketpp::lib::bind(&CWebSocket::on_open,this,::_1));
+	wsock->set_message_handler(websocketpp::lib::bind(&CWebSocket::on_message, this, ::_1, ::_2));
+	wsock->set_open_handler(websocketpp::lib::bind(&CWebSocket::on_open, this, ::_1));
+
+	is_init = true;
+}
+
+bool CWebSocket::OpenSocket(std::string address)
+{
+	if (is_open || !is_init)
+		return false;
 
 	stay_open = true;
 
@@ -101,6 +105,8 @@ bool CWebSocket::SendMsg(std::string message)
 	websocketpp::lib::error_code ec;
 
 	wsock->send(con_ptr, message, websocketpp::frame::opcode::text, ec);
+
+	return true;
 }
 
 std::string CWebSocket::GetNextMessage()

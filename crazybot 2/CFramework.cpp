@@ -6,21 +6,20 @@ CFramework::CFramework()
 	Socket = new CSocket;
 	JSON = new CJSON;
 	WSocket = new CWebSocket;
+	Stats = new CStats;
 	ws_thread = NULL;
 	keep_open = true;
 }
 
 CFramework::~CFramework()
 {
-	//if (JSON)
-	//	delete JSON;
-	//if (Socket)
-	//	delete Socket;
-	//if (WSocket)
-	//	delete WSocket;
+	SAFE_DELETE(JSON);
+	SAFE_DELETE(Socket);
+	SAFE_DELETE(Stats);
 	WSocket->CloseSocket();
 	keep_open = false;
 	ws_thread->join();
+	SAFE_DELETE(WSocket);
 }
 
 void CFramework::ws_open_loop()
@@ -36,7 +35,6 @@ void CFramework::ws_open_loop()
 	{
 		std::thread thr(&CWebSocket::OpenSocket,WSocket,chat);
 
-		std::cout << buf << std::endl;
 		// Leave some time for it to connect
 		std::this_thread::sleep_for(std::chrono::seconds(5));
 		// Send auth message
@@ -75,8 +73,6 @@ std::string CFramework::Auth(std::string user, std::string pass)
 	Socket->DeleteSocket(sock);
 	delete [] buf;
 
-	std::cout << resp << std::endl;
-
 	return auth_cookie;
 }
 
@@ -95,7 +91,14 @@ void CFramework::Init()
 	auth_token = Auth(val["usr"].asString(), val["pw"].asString());
 
 	// Init WebSocket
+	WSocket->Init();
+
+	//Init stats updating
+	Stats->InitAutoUpdaters();
+
 	ws_thread = new std::thread(&CFramework::ws_open_loop, this);
 
 	std::this_thread::sleep_for(std::chrono::seconds(8)); // Wait until WebSocket opens
+
+	WSocket->SendMsg("{\"cmd\":\"talk\",\"params\":[\"/msg crazyman4865 hello :3\"]}");
 }

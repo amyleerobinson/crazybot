@@ -13,6 +13,8 @@
 #include <thread>
 #include <mutex>
 
+#include "Utils.h"
+
 // Include the websocket files
 #include <websocketpp/config/asio_no_tls_client.hpp>
 #include <websocketpp/client.hpp>
@@ -27,8 +29,7 @@ class CWebSocket // Our websocket client
 	websocketpp::client<config::asio_client>* wsock;
 	websocketpp::client<config::asio_client>::connection_ptr con_ptr;
 	std::queue<std::string> msg_queue; // Received messages go here
-	bool is_open;
-	bool stay_open;
+	bool is_open, stay_open, is_init;
 	std::mutex *mtx;
 
 	std::thread *run_thread;
@@ -39,11 +40,10 @@ class CWebSocket // Our websocket client
 	void on_open(connection_hdl hdl);
 	// The function for the connection thread
 	//void con_loop(std::string message);
-
-	friend class CFramework;
 public:
 	CWebSocket();
 	~CWebSocket();
+	void Init();
 	bool OpenSocket(std::string address);
 	bool CloseSocket();
 	bool SendMsg(std::string message);

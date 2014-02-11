@@ -4,6 +4,7 @@
 #include "crazybot/CJSON.h"
 #include "crazybot/CSocket.h"
 #include "crazybot/CWebSocket.h"
+#include "crazybot/CStats.h"
 
 #include <fstream>
 
@@ -12,6 +13,7 @@ class CFramework // All bot operations will be handled by this class
 	CJSON* JSON;
 	CSocket* Socket;
 	CWebSocket* WSocket;
+	CStats* Stats;
 	bool is_init;
 	std::string auth_token;
 
