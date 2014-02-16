@@ -35,6 +35,9 @@
     <ClCompile Include="crazybot\Utils.cpp">
       <Filter>Source Files\crazybot</Filter>
     </ClCompile>
+    <ClCompile Include="crazybot\CMsgProc.cpp">
+      <Filter>Source Files\crazybot</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="crazybot\CSocket.h">
@@ -53,6 +56,9 @@
       <Filter>Source Files\crazybot</Filter>
     </ClInclude>
     <ClInclude Include="crazybot\Utils.h">
+      <Filter>Source Files\crazybot</Filter>
+    </ClInclude>
+    <ClInclude Include="crazybot\CMsgProc.h">
       <Filter>Source Files\crazybot</Filter>
     </ClInclude>
   </ItemGroup>

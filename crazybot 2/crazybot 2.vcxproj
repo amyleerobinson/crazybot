@@ -87,6 +87,7 @@
   <ItemGroup>
     <ClCompile Include="CFramework.cpp" />
     <ClCompile Include="crazybot\CJSON.cpp" />
+    <ClCompile Include="crazybot\CMsgProc.cpp" />
     <ClCompile Include="crazybot\CSocket.cpp" />
     <ClCompile Include="crazybot\CStats.cpp" />
     <ClCompile Include="crazybot\CWebSocket.cpp" />
@@ -96,6 +97,7 @@
   <ItemGroup>
     <ClInclude Include="CFramework.h" />
     <ClInclude Include="crazybot\CJSON.h" />
+    <ClInclude Include="crazybot\CMsgProc.h" />
     <ClInclude Include="crazybot\CSocket.h" />
     <ClInclude Include="crazybot\CStats.h" />
     <ClInclude Include="crazybot\CWebSocket.h" />

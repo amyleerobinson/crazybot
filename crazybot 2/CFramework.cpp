@@ -7,8 +7,12 @@ CFramework::CFramework()
 	JSON = new CJSON;
 	WSocket = new CWebSocket;
 	Stats = new CStats;
+	MsgProc = new CMsgProc();
 	ws_thread = NULL;
+	msg_thread = NULL;
+	acc_u_thread = NULL;
 	keep_open = true;
+	force_acc_update = false;
 }
 
 CFramework::~CFramework()
@@ -19,7 +23,10 @@ CFramework::~CFramework()
 	WSocket->CloseSocket();
 	keep_open = false;
 	ws_thread->join();
+	msg_thread->join();
+	acc_u_thread->join();
 	SAFE_DELETE(WSocket);
+	SAFE_DELETE(MsgProc);
 }
 
 void CFramework::ws_open_loop()
@@ -44,6 +51,49 @@ void CFramework::ws_open_loop()
 	}
 
 	delete []buf;
+}
+
+void CFramework::msg_loop()
+{
+	std::thread *acc_update;
+
+	while (keep_open)
+	{
+		std::string ws_message = WSocket->GetNextMessage();
+		std::string proc_message = MsgProc->GetNextReply();
+		if (ws_message != "")
+			MsgProc->ProcessMsg(JSON->Parse(ws_message));
+		if (proc_message != "")
+		{
+			if (proc_message != "ACCURACY_UPDATE")
+				WSocket->SendMsg(proc_message);
+			else
+				force_acc_update = true;
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(150));
+	}
+}
+
+void CFramework::update_accuracy_loop()
+{
+	while (keep_open)
+	{
+		std::this_thread::sleep_for(std::chrono::minutes(1));
+
+		std::time_t tt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		std::tm * ptm = std::localtime(&tt);
+
+		if (!(ptm->tm_hour == 6 && ptm->tm_min >= 50 && ptm->tm_min < 52) && !force_acc_update)
+			continue;
+
+		if ( !force_acc_update )
+			WSocket->SendMsg("{\"cmd\":\"talk\",\"params\":[\"Starting scheduled accuracy stats update...\"]}");
+
+		force_acc_update = false;
+
+		Stats->UpdateAccuracy();
+		WSocket->SendMsg("{\"cmd\":\"talk\",\"params\":[\"Update done.\"]}");
+	}
 }
 
 std::string CFramework::Auth(std::string user, std::string pass)
@@ -93,10 +143,9 @@ void CFramework::Init()
 	// Init WebSocket
 	WSocket->Init();
 
-	//Init stats updating
-	Stats->InitAutoUpdaters();
-
 	ws_thread = new std::thread(&CFramework::ws_open_loop, this);
+	msg_thread = new std::thread(&CFramework::msg_loop, this);
+	acc_u_thread = new std::thread(&CFramework::update_accuracy_loop, this);
 
 	std::this_thread::sleep_for(std::chrono::seconds(8)); // Wait until WebSocket opens
 
