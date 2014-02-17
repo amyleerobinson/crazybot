@@ -1,6 +1,6 @@
 #include "Utils.h"
 
-Json::Value Utils::APICall(std::string url, std::string extradata)
+Json::Value Utils::APICall(std::string url, std::string extradata, std::string method)
 {
 	CJSON *JSON = new CJSON();
 	CSocket *Socket = new CSocket();
@@ -9,11 +9,10 @@ Json::Value Utils::APICall(std::string url, std::string extradata)
 	SOCKET sock = Socket->CreateSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	std::string request;
 
-	request += "GET /" + url + " HTTP/1.0\r\n";
+	request += method + " /" + url + " HTTP/1.1\r\n";
 	request += "Host: www.eyewire.org\r\n";
 	request += "Connection: close\r\n";
 	request += extradata;
-	request += "\r\n";
 
 	std::string response = Socket->SendData(sock, ip, 80, request);
 
@@ -32,7 +31,7 @@ Json::Value Utils::APICall(std::string url, std::string extradata)
 	return ret;
 }
 
-std::vector<std::string> split(const std::string &s, char delim)
+std::vector<std::string> Utils::split(const std::string &s, char delim)
 {
 	std::vector<std::string> elems;
 	std::stringstream ss(s);
@@ -41,4 +40,29 @@ std::vector<std::string> split(const std::string &s, char delim)
 		elems.push_back(item);
 	}
 	return elems;
+}
+
+std::string Utils::MakeDate(time_t timer)
+{
+	std::tm * ptm = std::localtime(&timer);
+
+	std::string date;
+
+	char *buf = new char[5];
+	_itoa((ptm->tm_year + 1900), buf, 10);
+	date = buf;
+	_itoa((ptm->tm_mon + 1), buf, 10);
+	if (strlen(buf) == 1)
+		date += "-0";
+	else
+		date += "-";
+	date += buf;
+	_itoa((ptm->tm_mday), buf, 10);
+	if (strlen(buf) == 1)
+		date += "-0";
+	else
+		date += "-";
+	date += buf;
+
+	return date;
 }

@@ -11,6 +11,8 @@ CFramework::CFramework()
 	ws_thread = NULL;
 	msg_thread = NULL;
 	acc_u_thread = NULL;
+	cube_u_thread = NULL;
+	points_u_thread = NULL;
 	keep_open = true;
 	force_acc_update = false;
 }
@@ -25,6 +27,8 @@ CFramework::~CFramework()
 	ws_thread->join();
 	msg_thread->join();
 	acc_u_thread->join();
+	cube_u_thread->join();
+	points_u_thread->join();
 	SAFE_DELETE(WSocket);
 	SAFE_DELETE(MsgProc);
 }
@@ -87,12 +91,34 @@ void CFramework::update_accuracy_loop()
 			continue;
 
 		if ( !force_acc_update )
-			WSocket->SendMsg("{\"cmd\":\"talk\",\"params\":[\"Starting scheduled accuracy stats update...\"]}");
+			WSocket->SendMsg("{\"cmd\":\"talk\",\"params\":[\"Starting scheduled accuracy stats fetch, getting latest data...\"]}");
 
 		force_acc_update = false;
 
 		Stats->UpdateAccuracy();
-		WSocket->SendMsg("{\"cmd\":\"talk\",\"params\":[\"Update done.\"]}");
+		WSocket->SendMsg("{\"cmd\":\"talk\",\"params\":[\"Accuracy stats fetch done. Results can be found at\"]}");
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		WSocket->SendMsg("{\"cmd\":\"talk\",\"params\":[\"http://crazyman4865.com/crazybot/accuracy.php\"]}");
+	}
+}
+
+void CFramework::update_cubes_loop()
+{
+	while (keep_open)
+	{
+		std::this_thread::sleep_for(std::chrono::minutes(1));
+
+		Stats->UpdateCubes();
+	}
+}
+
+void CFramework::update_points_loop()
+{
+	while (keep_open)
+	{
+		std::this_thread::sleep_for(std::chrono::minutes(1));
+
+		Stats->UpdatePoints();
 	}
 }
 
@@ -143,9 +169,13 @@ void CFramework::Init()
 	// Init WebSocket
 	WSocket->Init();
 
+	Stats->Init();
+
 	ws_thread = new std::thread(&CFramework::ws_open_loop, this);
 	msg_thread = new std::thread(&CFramework::msg_loop, this);
 	acc_u_thread = new std::thread(&CFramework::update_accuracy_loop, this);
+	cube_u_thread = new std::thread(&CFramework::update_cubes_loop, this);
+	points_u_thread = new std::thread(&CFramework::update_points_loop, this);
 
 	std::this_thread::sleep_for(std::chrono::seconds(8)); // Wait until WebSocket opens
 
