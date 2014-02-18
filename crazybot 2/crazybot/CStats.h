@@ -24,6 +24,7 @@ public:
 	void UpdateAccuracy();
 	void UpdateCubes();
 	void UpdatePoints();
+	void UpdateRaces();
 	// WARNING: Call this function only if you're prepared to wait a long time
 	void FullUpdateCubes();
 	void FullUpdatePoints();

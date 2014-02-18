@@ -8,6 +8,7 @@
 #include <string>
 #include <fstream>
 #include <iterator>
+#include <regex>
 
 class CMsgProc
 {
@@ -17,6 +18,8 @@ public:
 	CMsgProc();
 	~CMsgProc();
 	bool ProcessMsg(Json::Value Message);
+	void PublicMessage(std::string msg);
+	void PrivateMessage(std::string Receiver, std::string msg);
 	std::string GetNextReply();
 };
 

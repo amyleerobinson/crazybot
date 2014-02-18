@@ -66,3 +66,23 @@ std::string Utils::MakeDate(time_t timer)
 
 	return date;
 }
+
+int Utils::toInt(std::string str)
+{
+	return atoi(str.c_str());
+}
+
+std::string Utils::ReadFile(std::string filename)
+{
+	std::ifstream openfile(filename);
+	std::string data((std::istreambuf_iterator<char>(openfile)), std::istreambuf_iterator<char>());
+	return data;
+}
+
+std::string Utils::toString(int num)
+{
+	char buf[15];
+	_itoa_s(num, buf, 10);
+	std::string ret = buf;
+	return ret;
+}

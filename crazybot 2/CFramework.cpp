@@ -13,6 +13,7 @@ CFramework::CFramework()
 	acc_u_thread = NULL;
 	cube_u_thread = NULL;
 	points_u_thread = NULL;
+	races_u_thread = NULL;
 	keep_open = true;
 	force_acc_update = false;
 }
@@ -29,6 +30,7 @@ CFramework::~CFramework()
 	acc_u_thread->join();
 	cube_u_thread->join();
 	points_u_thread->join();
+	races_u_thread->join();
 	SAFE_DELETE(WSocket);
 	SAFE_DELETE(MsgProc);
 }
@@ -70,7 +72,10 @@ void CFramework::msg_loop()
 		if (proc_message != "")
 		{
 			if (proc_message != "ACCURACY_UPDATE")
+			{
 				WSocket->SendMsg(proc_message);
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			}
 			else
 				force_acc_update = true;
 		}
@@ -119,6 +124,79 @@ void CFramework::update_points_loop()
 		std::this_thread::sleep_for(std::chrono::minutes(1));
 
 		Stats->UpdatePoints();
+	}
+}
+
+void CFramework::update_races_loop()
+{
+	while (keep_open)
+	{
+		std::this_thread::sleep_for(std::chrono::minutes(1));
+
+		Json::Value races = JSON->Parse(Utils::ReadFile("config/races.txt"));
+
+		time_t timer = time(NULL);
+		timer -= (3600 * 8);
+		unsigned short count = 0;
+
+		for (auto race : races["races"])
+		{
+			// Split the date into separate parts
+
+			std::vector<std::string> startDate = Utils::split(race["times"]["starttime"].asString(), '-');
+			std::vector<std::string> endDate = Utils::split(race["times"]["endtime"].asString(), '-');
+
+			// time_t - stores time in seconds from Jan 1, 1970
+			time_t rawtime1, rawtime2;
+			// tm - struct for easier management of date and time
+			tm *startTime = new tm, *endTime = new tm;
+			// fill in the tm structures
+			startTime->tm_year = Utils::toInt(startDate[0]) - 1900; startTime->tm_mon = Utils::toInt(startDate[1]) - 1;
+			startTime->tm_mday = Utils::toInt(startDate[2]); startTime->tm_hour = Utils::toInt(startDate[3]);
+			startTime->tm_min = Utils::toInt(startDate[4]); startTime->tm_sec = Utils::toInt(startDate[5]);
+
+			endTime->tm_year = Utils::toInt(endDate[0]) - 1900; endTime->tm_mon = Utils::toInt(endDate[1]) - 1;
+			endTime->tm_mday = Utils::toInt(endDate[2]); endTime->tm_hour = Utils::toInt(endDate[3]);
+			endTime->tm_min = Utils::toInt(endDate[4]); endTime->tm_sec = Utils::toInt(endDate[5]);
+
+			// Create the raw time from the structs above
+			rawtime1 = mktime(startTime);
+			rawtime2 = mktime(endTime);
+
+			if (timer > rawtime1 && !races["races"][count]["started"].asBool())
+			{
+				races["races"][count]["started"] = true;
+				char buf[150];
+				std::strftime(buf, 150, "%c", endTime);
+				std::string endString = buf;
+				std::string tracking = "";
+				if (race["track"]["cubes"].asBool())
+					tracking += "cubes";
+				if (race["track"]["points"].asBool())
+					tracking += " and points";
+				MsgProc->PublicMessage(race["name"].asString() + " just started. It will track " + tracking + " and will end on " + endString + " EST.");
+				MsgProc->PublicMessage("Leaderboard for the race can be found at http://crazyman4865.com/crazybot/races.php?id=" + Utils::toString(race["id"].asInt()) + " (updates every minute)");
+			}
+			if (timer > rawtime2 && !races["races"][count]["finished"].asBool())
+			{
+				races["races"][count]["finished"] = true;
+				MsgProc->PublicMessage(race["name"].asString() + " just ended. Congatulations to the winners! Leaderboard can be found at");
+				MsgProc->PublicMessage("http://crazyman4865.com/crazybot/races.php?id=" + Utils::toString(race["id"].asInt()));
+			}
+			count++;
+
+			delete startTime; delete endTime;
+		}
+
+		Json::FastWriter writer;
+
+		std::string out = writer.write(races);
+
+		std::ofstream fileo("config/races.txt", std::ios::trunc);
+		fileo << out;
+		fileo.close();
+
+		Stats->UpdateRaces();
 	}
 }
 
@@ -176,6 +254,7 @@ void CFramework::Init()
 	acc_u_thread = new std::thread(&CFramework::update_accuracy_loop, this);
 	cube_u_thread = new std::thread(&CFramework::update_cubes_loop, this);
 	points_u_thread = new std::thread(&CFramework::update_points_loop, this);
+	races_u_thread = new std::thread(&CFramework::update_races_loop, this);
 
 	std::this_thread::sleep_for(std::chrono::seconds(8)); // Wait until WebSocket opens
 

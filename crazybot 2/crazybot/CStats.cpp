@@ -365,3 +365,101 @@ void CStats::FullUpdatePoints()
 	fileo << out;
 	fileo.close();
 }
+
+void CStats::UpdateRaces()
+{
+	Json::Value special_api = JSON->Parse(Utils::ReadFile("config/specialapi.txt"));
+	Json::Value races = JSON->Parse(Utils::ReadFile("config/races.txt"));
+	std::string ip = "18.4.45.12";
+
+	unsigned short count = 0;
+
+	for (auto race : races["races"])
+	{
+		if (race["finished"] == true || race["started"] == false)
+			continue;
+
+		std::string startdate = race["times"]["starttime"].asString().substr(0, 10) + " ";
+		startdate += race["times"]["starttime"].asString().substr(11, 8);
+
+		std::string enddate = race["times"]["endtime"].asString().substr(0, 10) + " ";
+		enddate += race["times"]["endtime"].asString().substr(11, 8);
+
+		std::string request;
+
+
+		if (race["track"]["points"].asBool() == true)
+		{
+			request = "";
+			std::string callstr = "request=8&timespan=custom&startTime=" + startdate + "&endTime=" + enddate;
+
+			char *buf = new char[5];
+			_itoa(strlen(callstr.c_str()), buf, 10);
+			std::string len = buf;
+			request += "POST " + special_api["url"].asString() + " HTTP/1.1\r\n";
+			request += "Host: " + special_api["host"].asString() + "\r\n";
+			request += "Content-type: application/x-www-form-urlencoded\r\n";
+			request += "Connection: close\r\n";
+			request += "Content-length: " + len + "\r\n\r\n";
+			request += callstr;
+
+			SOCKET sock = Socket->CreateSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+			std::string response = Socket->SendData(sock, ip, 80, request);
+
+			Socket->DeleteSocket(sock);
+
+			int end = response.find("[");
+			response.erase(0, end);
+
+			Json::Value pointdata = JSON->Parse(response);
+
+			for (auto competitor : pointdata)
+			{
+				races["races"][count]["competitors"][competitor["username"].asString()]["username"] = competitor["username"].asString();
+				races["races"][count]["competitors"][competitor["username"].asString()]["points"] = competitor["points"].asString();
+			}
+		}
+		if (race["track"]["cubes"].asBool() == true)
+		{
+			request = "";
+			std::string callstr = "request=5&timespan=custom&startTime=" + startdate + "&endTime=" + enddate;
+
+			char *buf = new char[5];
+			_itoa(strlen(callstr.c_str()), buf, 10);
+			std::string len = buf;
+			request += "POST " + special_api["url"].asString() + " HTTP/1.1\r\n";
+			request += "Host: " + special_api["host"].asString() + "\r\n";
+			request += "Content-type: application/x-www-form-urlencoded\r\n";
+			request += "Connection: close\r\n";
+			request += "Content-length: " + len + "\r\n\r\n";
+			request += callstr;
+
+			SOCKET sock = Socket->CreateSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+			std::string response = Socket->SendData(sock, ip, 80, request);
+
+			Socket->DeleteSocket(sock);
+
+			int end = response.find("[");
+			response.erase(0, end);
+
+			Json::Value cubedata = JSON->Parse(response);
+
+			for (auto competitor : cubedata)
+			{
+				races["races"][count]["competitors"][competitor["username"].asString()]["username"] = competitor["username"].asString();
+				races["races"][count]["competitors"][competitor["username"].asString()]["cubes"] = competitor["cubes"].asString();
+			}
+		}
+		count++;
+
+	}
+	Json::FastWriter writer;
+
+	std::string out = writer.write(races);
+
+	std::ofstream fileo("config/races.txt", std::ios::trunc);
+	fileo << out;
+	fileo.close();
+}

@@ -33,11 +33,13 @@ class CFramework // All bot operations will be handled by this class
 	std::thread *acc_u_thread;
 	std::thread *cube_u_thread;
 	std::thread *points_u_thread;
+	std::thread *races_u_thread;
 	bool force_acc_update;
 
 	void update_accuracy_loop();
 	void update_cubes_loop();
 	void update_points_loop();
+	void update_races_loop();
 public:
 	CFramework();
 	~CFramework();
