@@ -133,6 +133,8 @@ void CFramework::update_races_loop()
 	{
 		std::this_thread::sleep_for(std::chrono::minutes(1));
 
+		Stats->UpdateRaces();
+
 		Json::Value races = JSON->Parse(Utils::ReadFile("config/races.txt"));
 
 		time_t timer = time(NULL);
@@ -167,6 +169,7 @@ void CFramework::update_races_loop()
 			{
 				races["races"][count]["started"] = true;
 				char buf[150];
+				endTime->tm_hour += 1;
 				std::strftime(buf, 150, "%c", endTime);
 				std::string endString = buf;
 				std::string tracking = "";
@@ -195,8 +198,6 @@ void CFramework::update_races_loop()
 		std::ofstream fileo("config/races.txt", std::ios::trunc);
 		fileo << out;
 		fileo.close();
-
-		Stats->UpdateRaces();
 	}
 }
 

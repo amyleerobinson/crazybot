@@ -79,9 +79,13 @@ void CStats::UpdateCubes()
 	std::string specapi((std::istreambuf_iterator<char>(openfile)), std::istreambuf_iterator<char>());
 	Json::Value special_api = JSON->Parse(specapi);
 
-	std::string callstr = "request=5&timespan=day";
-
 	openfile.close();
+
+	time_t timer = time(NULL) - 3600 * 7;
+	std::string date = Utils::MakeDate(timer);
+	std::string dateTomorrow = Utils::MakeDate(timer + 3600 * 24);
+
+	std::string callstr = "request=5&timespan=custom&startTime=" + date + "&endTime=" + dateTomorrow;
 
 	char *buf = new char[5];
 	_itoa(strlen(callstr.c_str()), buf, 10);
@@ -109,26 +113,6 @@ void CStats::UpdateCubes()
 	response.erase(0, end);
 
 	Json::Value cubedata = JSON->Parse(response);
-
-	time_t timer = time(NULL);
-	timer -= (3600 * 7);
-	std::tm * ptm = std::localtime(&timer);
-
-	buf = new char[5];
-	_itoa((ptm->tm_year+1900), buf, 10);
-	std::string date = buf;
-	_itoa((ptm->tm_mon+1), buf, 10);
-	if (strlen(buf) == 1)
-		date += "-0";
-	else
-		date += "-";
-	date += buf;
-	_itoa((ptm->tm_mday), buf, 10);
-	if (strlen(buf) == 1)
-		date += "-0";
-	else
-		date += "-";
-	date += buf;
 
 	for (auto user : cubedata)
 	{
@@ -227,9 +211,13 @@ void CStats::UpdatePoints()
 	std::string specapi((std::istreambuf_iterator<char>(openfile)), std::istreambuf_iterator<char>());
 	Json::Value special_api = JSON->Parse(specapi);
 
-	std::string callstr = "request=8&timespan=day";
-
 	openfile.close();
+
+	time_t timer = time(NULL) - 3600 * 7;
+	std::string date = Utils::MakeDate(timer);
+	std::string dateTomorrow = Utils::MakeDate(timer + 3600 * 24);
+
+	std::string callstr = "request=8&timespan=custom&startTime=" + date + "&endTime=" + dateTomorrow;
 
 	char *buf = new char[5];
 	_itoa(strlen(callstr.c_str()), buf, 10);
@@ -257,26 +245,6 @@ void CStats::UpdatePoints()
 	response.erase(0, end);
 
 	Json::Value pointsdata = JSON->Parse(response);
-
-	time_t timer = time(NULL);
-	timer -= (3600 * 7);
-	std::tm * ptm = std::localtime(&timer);
-
-	buf = new char[5];
-	_itoa((ptm->tm_year + 1900), buf, 10);
-	std::string date = buf;
-	_itoa((ptm->tm_mon + 1), buf, 10);
-	if (strlen(buf) == 1)
-		date += "-0";
-	else
-		date += "-";
-	date += buf;
-	_itoa((ptm->tm_mday), buf, 10);
-	if (strlen(buf) == 1)
-		date += "-0";
-	else
-		date += "-";
-	date += buf;
 
 	for (auto user : pointsdata)
 	{
@@ -377,13 +345,26 @@ void CStats::UpdateRaces()
 	for (auto race : races["races"])
 	{
 		if (race["finished"] == true || race["started"] == false)
+		{
+			count++;
 			continue;
+		}
 
 		std::string startdate = race["times"]["starttime"].asString().substr(0, 10) + " ";
-		startdate += race["times"]["starttime"].asString().substr(11, 8);
+		std::string starthour = race["times"]["starttime"].asString().substr(11, 8);
+		while (starthour.find('-') != std::string::npos)
+		{
+			starthour.replace(starthour.find('-'),1,":");
+		}
+		startdate += starthour;
 
 		std::string enddate = race["times"]["endtime"].asString().substr(0, 10) + " ";
-		enddate += race["times"]["endtime"].asString().substr(11, 8);
+		std::string endhour = race["times"]["endtime"].asString().substr(11, 8);
+		while (endhour.find('-') != std::string::npos)
+		{
+			endhour.replace(endhour.find('-'), 1,":");
+		}
+		enddate += endhour;
 
 		std::string request;
 
