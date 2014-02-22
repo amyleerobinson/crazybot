@@ -344,7 +344,7 @@ void CStats::UpdateRaces()
 
 	for (auto race : races["races"])
 	{
-		if (race["finished"] == true || race["started"] == false)
+		if (race["retrofinish"] == true || race["started"] == false)
 		{
 			count++;
 			continue;

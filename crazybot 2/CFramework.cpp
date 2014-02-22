@@ -37,12 +37,12 @@ CFramework::~CFramework()
 
 void CFramework::ws_open_loop()
 {
-	char *buf = new char[256];
+	char buf[256];
 	std::string uid = auth_token.substr(0, 5);
 	std::string token = auth_token.substr(8);
 	std::string chat = "ws://eyewire.org/chat";
 
-	sprintf(buf, "{\"uid\":%s,\"token\":\"%s\"}", uid.c_str(), token.c_str());
+	sprintf_s(buf, "{\"uid\":%s,\"token\":\"%s\"}", uid.c_str(), token.c_str());
 
 	while (keep_open)
 	{
@@ -55,14 +55,10 @@ void CFramework::ws_open_loop()
 
 		thr.join(); // Wait for the socket to close
 	}
-
-	delete []buf;
 }
 
 void CFramework::msg_loop()
 {
-	std::thread *acc_update;
-
 	while (keep_open)
 	{
 		std::string ws_message = WSocket->GetNextMessage();
@@ -183,9 +179,11 @@ void CFramework::update_races_loop()
 			if (timer > rawtime2 && !races["races"][count]["finished"].asBool())
 			{
 				races["races"][count]["finished"] = true;
-				MsgProc->PublicMessage(race["name"].asString() + " just ended. Congatulations to the winners! Leaderboard can be found at");
-				MsgProc->PublicMessage("http://crazyman4865.com/crazybot/races.php?id=" + Utils::toString(race["id"].asInt()));
+				MsgProc->PublicMessage(race["name"].asString() + " just ended. Leaderboard can be found at http://crazyman4865.com/crazybot/races.php?id=" + Utils::toString(race["id"].asInt()));
+				MsgProc->PublicMessage("Retroactive points will be tracked over the course of the next hour.");
 			}
+			if (timer > rawtime2 + 3600 && !races["races"][count]["retrofinish"].asBool())
+				races["races"][count]["retrofinish"] = true;
 			count++;
 
 			delete startTime; delete endTime;
