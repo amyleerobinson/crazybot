@@ -13,10 +13,16 @@ CMsgProc::~CMsgProc()
 bool CMsgProc::ProcessMsg(Json::Value Message)
 {
 	std::ifstream usrfile("config/userdb.txt");
+	std::ofstream chatlog("config/chat.log", std::ios::app );
 	std::string usrdata((std::istreambuf_iterator<char>(usrfile)), std::istreambuf_iterator<char>());
 	Json::Reader reader;
 	Json::Value usrdb;
 	reader.parse(usrdata, usrdb);
+
+	// Get time of the message
+	time_t *rawCurTime = new time_t;
+	time(rawCurTime);
+	tm *curTime = localtime(rawCurTime);
 
 	usrfile.close();
 
@@ -40,8 +46,25 @@ bool CMsgProc::ProcessMsg(Json::Value Message)
 			PublicMessage( Sender + " forced accuracy stats fetch. Getting latest data...");
 		}
 
-		std::vector<std::string> args;
+		// Chat logging
 
+		if (Scope == "global")
+		{
+			// Timestamp of message
+			std::string timestamp = "[";
+			timestamp += ctime(rawCurTime);
+			timestamp.erase(timestamp.length() - 1, 1);
+			timestamp += "]";
+
+			// Reconstruct the message
+			std::string chatmsg = "<" + Sender + "> " + Msg;
+
+			// Write message to log
+			chatlog << timestamp << " " << chatmsg << '\n';
+		}
+
+		// Command processing
+		std::vector<std::string> args;
 
 		// Sample message format
 		//registerRace 2014-02-17-00-00-00 2014-02-18-00-00-00 points,cubes "Cube Race"
@@ -174,6 +197,10 @@ bool CMsgProc::ProcessMsg(Json::Value Message)
 	std::ofstream usrfileo("config/userdb.txt", std::ios::trunc);
 	usrfileo << fileoutput;
 	usrfileo.close();
+
+	chatlog.close();
+
+	SAFE_DELETE(rawCurTime);
 
 	return true;
 }
