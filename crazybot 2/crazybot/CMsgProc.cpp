@@ -25,8 +25,9 @@ bool CMsgProc::ProcessMsg(Json::Value Message)
 	{
 		std::string Sender = Message["origin"]["username"].asString();
 		std::string Msg = Message["params"]["msg"].asString();
+		std::string Scope = Message["params"]["scope"].asString();
 
-		if (usrdb[Sender]["usr"].asString() == "")
+		if (usrdb[Sender]["usr"].asString() == "" && Sender != "")
 		{
 			std::cout << "New user added to DB: " << Sender << std::endl;
 			usrdb[Sender]["usr"] = Sender;
@@ -157,7 +158,8 @@ bool CMsgProc::ProcessMsg(Json::Value Message)
 	{
 		std::string Sender = Message["params"]["attr"]["username"].asString();
 		std::string SubType = Message["params"]["type"].asString();
-		if ((SubType == "award" || SubType == "connect" || SubType == "disconnect") && usrdb[Sender]["usr"].asString() == "")
+
+		if ((SubType == "award" || SubType == "connect" || SubType == "disconnect") && usrdb[Sender]["usr"].asString() == "" && Sender != "")
 		{
 			std::cout << "New user added to DB: " << Sender << std::endl;
 			usrdb[Sender]["usr"] = Sender;
