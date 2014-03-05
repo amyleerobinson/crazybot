@@ -6,6 +6,7 @@ CFramework::CFramework()
 	Socket = new CSocket;
 	JSON = new CJSON;
 	WSocket = new CWebSocket;
+	WSServer = new CWebSocketServer;
 	Stats = new CStats;
 	MsgProc = new CMsgProc();
 	ws_thread = NULL;
@@ -14,6 +15,7 @@ CFramework::CFramework()
 	cube_u_thread = NULL;
 	points_u_thread = NULL;
 	races_u_thread = NULL;
+	srv_thread = NULL;
 	keep_open = true;
 	force_acc_update = false;
 }
@@ -31,7 +33,9 @@ CFramework::~CFramework()
 	cube_u_thread->join();
 	points_u_thread->join();
 	races_u_thread->join();
+	srv_thread->join();
 	SAFE_DELETE(WSocket);
+	SAFE_DELETE(WSServer);
 	SAFE_DELETE(MsgProc);
 }
 
@@ -199,6 +203,12 @@ void CFramework::update_races_loop()
 	}
 }
 
+void CFramework::srv_run_loop()
+{
+	while (keep_open)
+		WSServer->Init();
+}
+
 std::string CFramework::Auth(std::string user, std::string pass)
 {
 	SOCKET sock = Socket->CreateSocket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -248,12 +258,14 @@ void CFramework::Init()
 
 	Stats->Init();
 
+	// Did someone say threads?
 	ws_thread = new std::thread(&CFramework::ws_open_loop, this);
 	msg_thread = new std::thread(&CFramework::msg_loop, this);
 	acc_u_thread = new std::thread(&CFramework::update_accuracy_loop, this);
 	cube_u_thread = new std::thread(&CFramework::update_cubes_loop, this);
 	points_u_thread = new std::thread(&CFramework::update_points_loop, this);
 	races_u_thread = new std::thread(&CFramework::update_races_loop, this);
+	srv_thread = new std::thread(&CFramework::srv_run_loop, this);
 
 	std::this_thread::sleep_for(std::chrono::seconds(8)); // Wait until WebSocket opens
 

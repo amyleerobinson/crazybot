@@ -14,6 +14,7 @@ class CFramework // All bot operations will be handled by this class
 	CJSON* JSON;
 	CSocket* Socket;
 	CWebSocket* WSocket;
+	CWebSocketServer* WSServer;
 	CStats* Stats;
 	CMsgProc* MsgProc;
 	bool is_init;
@@ -34,12 +35,14 @@ class CFramework // All bot operations will be handled by this class
 	std::thread *cube_u_thread;
 	std::thread *points_u_thread;
 	std::thread *races_u_thread;
+	std::thread *srv_thread;
 	bool force_acc_update;
 
 	void update_accuracy_loop();
 	void update_cubes_loop();
 	void update_points_loop();
 	void update_races_loop();
+	void srv_run_loop();
 public:
 	CFramework();
 	~CFramework();

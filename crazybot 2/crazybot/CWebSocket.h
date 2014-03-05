@@ -17,10 +17,13 @@
 
 // Include the websocket files
 #include <websocketpp/config/asio_no_tls_client.hpp>
+#include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/client.hpp>
+#include <websocketpp/server.hpp>
 
 using namespace websocketpp;
 typedef websocketpp::config::asio_client::message_type::ptr message_ptr;
+typedef websocketpp::config::asio::message_type::ptr srv_message_ptr;
 using websocketpp::lib::placeholders::_1;
 using websocketpp::lib::placeholders::_2;
 
@@ -49,6 +52,46 @@ public:
 	bool SendMsg(std::string message);
 	std::string GetNextMessage();
 	std::mutex *GetMutex();
+};
+
+struct WSSConData
+{
+	connection_hdl Con_Hdl;
+	websocketpp::server<config::asio>::connection_ptr Con;
+	Json::Value Data;
+};
+
+struct WSSMsgData
+{
+	websocketpp::server<config::asio>::connection_ptr Con_Sender;
+	std::string Message;
+};
+
+class CWebSocketServer
+{
+	websocketpp::server<config::asio>* wsocksrv;
+	std::vector<WSSConData> open_connections;
+	std::queue<WSSMsgData> msg_queue; // Received messages go here
+
+	std::mutex* mtx;
+
+	bool is_listening;
+	unsigned short con_count;
+
+	// The message handler!
+	void on_message(websocketpp::connection_hdl hdl, srv_message_ptr msg);
+	// The handler for connection opening
+	void on_open(connection_hdl hdl);
+	// The handler for connection closing
+	void on_close(connection_hdl hdl);
+
+public:
+	CWebSocketServer();
+	~CWebSocketServer();
+	void Init();
+	bool SendMsg(std::string message, std::string recipient = "");
+	Json::Value GetUsrData(std::string user);
+	WSSMsgData GetNextMessage();
 };
 
 #endif
